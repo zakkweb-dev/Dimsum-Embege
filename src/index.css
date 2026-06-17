@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", sans-serif;
+  
+  --color-brand-red-50: #FFF3F2;
+  --color-brand-red-100: #FEE4E2;
+  --color-brand-red-200: #FECDCA;
+  --color-brand-red-300: #FDA29B;
+  --color-brand-red-500: #F04438;
+  --color-brand-red-600: #D92D20;
+  --color-brand-red-700: #B42318;
+  --color-brand-red-800: #912018;
+  --color-brand-red-900: #7A271A;
+  
+  --color-brand-cream-50: #FFF9F2;
+  --color-brand-cream-100: #FFF1E6;
+  --color-brand-cream-200: #FEE6CE;
+  --color-brand-cream-300: #FCD2A9;
+  --color-brand-cream-400: #FBB07A;
+  --color-brand-cream-500: #E68545;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #FFF9F2;
+  }
+}
+
+/* Custom Utilities for Bold Typography Style */
+.text-dark-ink {
+  color: #1D2939;
+}
+
+.border-soft {
+  border-color: rgba(29, 41, 57, 0.1);
+}
+
+.font-black-display {
+  font-family: "Inter", sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+
