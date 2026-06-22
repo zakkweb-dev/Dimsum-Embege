@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, Plus, Minus, Trash2, ShoppingBag, Truck, Store, ArrowRight, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { CartItem } from "../types";
+import { CartItem, Product } from "../types";
 import { WHATSAPP_NUMBER } from "../data";
 
 interface CartProps {
@@ -11,6 +11,8 @@ interface CartProps {
   onUpdateQuantity: (productId: string, customMessage: string | undefined, delta: number) => void;
   onRemoveItem: (productId: string, customMessage: string | undefined) => void;
   onClearCart: () => void;
+  whatsappNumber?: string;
+  dbProducts?: Product[];
 }
 
 export default function Cart({
@@ -20,6 +22,8 @@ export default function Cart({
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
+  whatsappNumber,
+  dbProducts,
 }: CartProps) {
   const [userName, setUserName] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery">("pickup");
@@ -34,8 +38,26 @@ export default function Cart({
     }).format(value);
   };
 
+  const getProductPrice = (productId: string, fallbackPrice: number) => {
+    const freshProd = dbProducts?.find(p => p.id === productId);
+    return freshProd ? freshProd.price : fallbackPrice;
+  };
+
+  const getProductName = (productId: string, fallbackName: string) => {
+    const freshProd = dbProducts?.find(p => p.id === productId);
+    return freshProd ? freshProd.name : fallbackName;
+  };
+
+  const getProductImage = (productId: string, fallbackImage: string) => {
+    const freshProd = dbProducts?.find(p => p.id === productId);
+    return freshProd ? freshProd.image : fallbackImage;
+  };
+
   const calculateTotal = () => {
-    return cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    return cartItems.reduce((acc, item) => {
+      const currentPrice = getProductPrice(item.product.id, item.product.price);
+      return acc + currentPrice * item.quantity;
+    }, 0);
   };
 
   // Generate real WhatsApp Click-to-Chat URL
@@ -52,10 +74,12 @@ export default function Cart({
 
     let itemDetails = "";
     cartItems.forEach((item, idx) => {
+      const currentPrice = getProductPrice(item.product.id, item.product.price);
+      const currentName = getProductName(item.product.id, item.product.name);
       const customMsgText = item.customMessage
         ? ` (Request Tulisan: "${item.customMessage}")`
         : "";
-      itemDetails += `${idx + 1}. *${item.product.name}* x${item.quantity}${customMsgText} - ${formatPrice(item.product.price * item.quantity)}\n`;
+      itemDetails += `${idx + 1}. *${currentName}* x${item.quantity}${customMsgText} - ${formatPrice(currentPrice * item.quantity)}\n`;
     });
 
     const methodLabel = deliveryMethod === "delivery" ? "🛵 DIANTAR (Delivery)" : "🛍️ AMBIL SENDIRI (Pickup)";
@@ -77,7 +101,7 @@ ${itemDetails}
 Mohon segera diproses fresh hangat-hangat ya Min! Terima kasih banyak!`;
 
     const encodedText = encodeURIComponent(textPayload);
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`;
+    return `https://wa.me/${whatsappNumber || WHATSAPP_NUMBER}?text=${encodedText}`;
   };
 
   return (
@@ -151,43 +175,47 @@ Mohon segera diproses fresh hangat-hangat ya Min! Terima kasih banyak!`;
                       </div>
 
                       <div className="space-y-3.5">
-                        {cartItems.map((item, index) => (
-                          <motion.div
-                            key={`${item.product.id}-${item.customMessage || ""}-${index}`}
-                            layout
-                            className="flex gap-4 p-3.5 bg-brand-cream-50 rounded-2xl border border-brand-cream-200"
-                          >
-                            <img
-                              src={item.product.image}
-                              alt={item.product.name}
-                              className="w-16 h-16 rounded-xl object-cover border border-brand-cream-300"
-                              referrerPolicy="no-referrer"
-                            />
-                            
-                            <div className="flex-1 flex flex-col justify-between">
-                              <div>
-                                <h3 className="font-display font-extrabold text-sm text-gray-901">
-                                  {item.product.name}
-                                </h3>
-                                {item.customMessage && (
-                                  <div className="mt-0.5 inline-flex items-center gap-1 text-[10px] bg-brand-red-50 text-brand-red-700 font-extrabold px-1.5 py-0.5 rounded-md">
-                                    Tulisan: "{item.customMessage}"
-                                  </div>
-                                )}
+                        {cartItems.map((item, index) => {
+                          const currentPrice = getProductPrice(item.product.id, item.product.price);
+                          const currentName = getProductName(item.product.id, item.product.name);
+                          const currentImage = getProductImage(item.product.id, item.product.image);
+                          return (
+                            <motion.div
+                              key={`${item.product.id}-${item.customMessage || ""}-${index}`}
+                              layout
+                              className="flex gap-4 p-3.5 bg-brand-cream-50 rounded-2xl border border-brand-cream-200"
+                            >
+                              <img
+                                src={currentImage}
+                                alt={currentName}
+                                className="w-16 h-16 rounded-xl object-cover border border-brand-cream-300"
+                                referrerPolicy="no-referrer"
+                              />
+                              
+                              <div className="flex-1 flex flex-col justify-between">
+                                <div>
+                                  <h3 className="font-display font-extrabold text-sm text-gray-901">
+                                    {currentName}
+                                  </h3>
+                                  {item.customMessage && (
+                                    <div className="mt-0.5 inline-flex items-center gap-1 text-[10px] bg-brand-red-50 text-brand-red-700 font-extrabold px-1.5 py-0.5 rounded-md">
+                                      Tulisan: "{item.customMessage}"
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-xs font-black text-brand-red-600 mt-0.5">
+                                  {formatPrice(currentPrice)}
+                                </p>
                               </div>
-                              <p className="text-xs font-black text-brand-red-600 mt-0.5">
-                                {formatPrice(item.product.price)}
-                              </p>
-                            </div>
 
-                            <div className="flex flex-col items-end justify-between">
-                              <button
-                                onClick={() => onRemoveItem(item.product.id, item.customMessage)}
-                                className="text-gray-400 hover:text-brand-red-600 transition-colors p-1"
-                                aria-label="Hapus Item"
-                              >
-                                <Trash2 size={15} />
-                              </button>
+                              <div className="flex flex-col items-end justify-between">
+                                <button
+                                  onClick={() => onRemoveItem(item.product.id, item.customMessage)}
+                                  className="text-gray-400 hover:text-brand-red-600 transition-colors p-1"
+                                  aria-label="Hapus Item"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
 
                               <div className="flex items-center gap-2 bg-white border border-brand-cream-250 rounded-lg px-1.5 py-0.5">
                                 <button
@@ -208,7 +236,8 @@ Mohon segera diproses fresh hangat-hangat ya Min! Terima kasih banyak!`;
                               </div>
                             </div>
                           </motion.div>
-                        ))}
+                        );
+                        })}
                       </div>
                     </div>
 

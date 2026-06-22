@@ -4,9 +4,10 @@ import { HERO_IMAGE } from "../data";
 
 interface HeroProps {
   onExploreMenu: () => void;
+  heroBgUrl?: string;
 }
 
-export default function Hero({ onExploreMenu }: HeroProps) {
+export default function Hero({ onExploreMenu, heroBgUrl }: HeroProps) {
   return (
     <section
       id="home"
@@ -98,7 +99,7 @@ export default function Hero({ onExploreMenu }: HeroProps) {
             {/* Main Visual Image Ring / Frame */}
             <div className="relative w-full max-w-[450px] aspect-square rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transform hover:rotate-1 transition-transform duration-500 bg-brand-cream-200">
               <img
-                src={HERO_IMAGE}
+                src={heroBgUrl || HERO_IMAGE}
                 alt="Dimsum Embege Steaming Dimsum Street Stall"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

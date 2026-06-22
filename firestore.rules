@@ -1,6 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Reviews rules
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if request.resource.data.name is string && 
@@ -9,7 +10,25 @@ service cloud.firestore {
                       request.resource.data.text != "" &&
                       request.resource.data.rating >= 1 && 
                       request.resource.data.rating <= 5;
-      allow update, delete: if false;
+      allow update, delete: if true; // Allowed for admin edits
+    }
+
+    // Products rules
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Branches rules
+    match /branches/{branchId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Settings rules
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }

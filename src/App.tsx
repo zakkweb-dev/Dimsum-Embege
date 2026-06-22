@@ -7,16 +7,76 @@ import About from "./components/About";
 import Menu from "./components/Menu";
 import HowToOrder from "./components/HowToOrder";
 import Testimonials from "./components/Testimonials";
+import Branches from "./components/Branches";
 import Footer from "./components/Footer";
 import Cart from "./components/Cart";
+import AdminPanel from "./components/AdminPanel";
 import { CartItem, Product } from "./types";
 import { WHATSAPP_NUMBER } from "./data";
+import { db, handleFirestoreError, OperationType } from "./lib/firebase";
+import { onSnapshot, doc, collection, query, orderBy, getDocFromServer } from "firebase/firestore";
+
+import { seedDatabase } from "./lib/dbSeeding";
 
 export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [settings, setSettings] = useState<any>({
+    logoUrl: "",
+    heroBgUrl: "",
+    whatsapp: WHATSAPP_NUMBER,
+    grabFood: ""
+  });
+
+  // Verify connection to Firestore and seed database on initialization
+  useEffect(() => {
+    async function initDb() {
+      try {
+        await seedDatabase();
+        await getDocFromServer(doc(db, "test", "connection"));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("the client is offline")) {
+          console.error("Please check your Firebase configuration.");
+        }
+      }
+    }
+    initDb();
+  }, []);
+
+  // Listen to Firestore products and settings
+  useEffect(() => {
+    const unsubSettings = onSnapshot(doc(db, "settings", "main"), (snap) => {
+      if (snap.exists()) {
+        setSettings(snap.data());
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, "settings/main");
+    });
+
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    const unsubProducts = onSnapshot(q, (snap) => {
+      const items: Product[] = [];
+      snap.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() } as Product);
+      });
+      setDbProducts(items);
+      setProductsLoading(false);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, "products");
+      setProductsLoading(false);
+    });
+
+    return () => {
+      unsubSettings();
+      unsubProducts();
+    };
+  }, []);
 
   // Load cart from localStorage on init
   useEffect(() => {
@@ -117,7 +177,8 @@ export default function App() {
     return cartItems.reduce((acc, item) => acc + item.quantity, 0);
   };
 
-  const generalInquiryUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=Halo%20Admin%20Dimsum%20Embege,%20saya%20tertarik%20tanya-tanya%20menunya%20dong!`;
+  const activeWhatsapp = settings.whatsapp || WHATSAPP_NUMBER;
+  const generalInquiryUrl = `https://wa.me/${activeWhatsapp}?text=Halo%20Admin%20Dimsum%20Embege,%20saya%20tertarik%20tanya-tanya%20menunya%20dong!`;
 
   return (
     <div className={`min-h-screen transition-colors duration-300 font-sans ${isDarkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-800"}`}>
@@ -135,28 +196,36 @@ export default function App() {
       </div>
 
       {/* Header Sticky Navigation */}
-      <Header cartCount={getCartTotalItems()} onOpenCart={() => setIsCartOpen(true)} />
+      <Header
+        cartCount={getCartTotalItems()}
+        onOpenCart={() => setIsCartOpen(true)}
+        logoUrl={settings.logoUrl}
+        onOpenAdmin={() => setIsAdminOpen(true)}
+      />
 
       {/* Main Sections */}
       <main>
         {/* Hero Section */}
-        <Hero onExploreMenu={handleExploreMenu} />
+        <Hero onExploreMenu={handleExploreMenu} heroBgUrl={settings.heroBgUrl} />
 
         {/* Brand Core Identity / About US Section */}
         <About />
 
         {/* Interactive Culinary Menu & Customizable Generator Section */}
-        <Menu onAddToCart={handleAddToCart} />
+        <Menu onAddToCart={handleAddToCart} dbProducts={dbProducts} productsLoading={productsLoading} />
 
         {/* Step-by-Step Order Pipeline Section */}
         <HowToOrder />
+
+        {/* Outlet Outlet Cabang Section */}
+        <Branches />
 
         {/* Customer Social Review Wall Section */}
         <Testimonials />
       </main>
 
       {/* Footer Section holding Contact maps and Copyright */}
-      <Footer />
+      <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
 
       {/* Slidable Shopping Cart drawer (Checkout) */}
       <Cart
@@ -166,7 +235,16 @@ export default function App() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
+        whatsappNumber={settings.whatsapp}
+        dbProducts={dbProducts}
       />
+
+      {/* Admin Panel Modal Overlay */}
+      <AnimatePresence>
+        {isAdminOpen && (
+          <AdminPanel onClose={() => setIsAdminOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Interactive Helper Floaters */}
 

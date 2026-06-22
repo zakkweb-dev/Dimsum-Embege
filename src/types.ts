@@ -5,6 +5,8 @@ export interface Product {
   description: string;
   image: string;
   isCustomizable?: boolean;
+  status?: string; // "Tersedia" | "Habis"
+  isBestSeller?: boolean; // true || false
 }
 
 export interface CartItem {

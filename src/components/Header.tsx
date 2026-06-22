@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { ShoppingBag, Menu, X, UtensilsCrossed } from "lucide-react";
+import { ShoppingBag, Menu, X, UtensilsCrossed, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
   cartCount: number;
   onOpenCart: () => void;
+  logoUrl?: string;
+  onOpenAdmin?: () => void;
 }
 
-export default function Header({ cartCount, onOpenCart }: HeaderProps) {
+export default function Header({ cartCount, onOpenCart, logoUrl, onOpenAdmin }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -24,6 +26,7 @@ export default function Header({ cartCount, onOpenCart }: HeaderProps) {
     { title: "About Us", href: "#about" },
     { title: "Menu", href: "#menu" },
     { title: "Cara Order", href: "#how-to-order" },
+    { title: "Cabang", href: "#branches" },
     { title: "Review", href: "#testimonials" },
   ];
 
@@ -39,8 +42,12 @@ export default function Header({ cartCount, onOpenCart }: HeaderProps) {
         <div className="flex items-center justify-between">
           {/* Logo Brand */}
           <a href="#home" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-full bg-brand-red-600 flex items-center justify-center text-white shadow-md shadow-brand-red-600/30 group-hover:scale-105 transition-transform duration-300">
-              <UtensilsCrossed size={20} className="stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-full bg-brand-red-600 flex items-center justify-center text-white shadow-md shadow-brand-red-600/30 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <UtensilsCrossed size={20} className="stroke-[2.5]" />
+              )}
             </div>
             <div className="flex flex-col">
               <span className="font-display font-extrabold text-xl tracking-tight text-brand-red-600 leading-none">
@@ -89,6 +96,19 @@ export default function Header({ cartCount, onOpenCart }: HeaderProps) {
               </AnimatePresence>
             </button>
 
+            {/* Tombol Admin Panel Login */}
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="relative p-2.5 rounded-full bg-brand-cream-100 hover:bg-brand-cream-200 text-slate-700 hover:text-brand-red-600 transition-all duration-200 hover:scale-105 select-none focus:outline-none cursor-pointer"
+                aria-label="Login Admin"
+                id="header-admin-btn"
+                title="Login Admin Panel"
+              >
+                <Lock size={19} />
+              </button>
+            )}
+
             {/* Tombol Mobile Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -122,7 +142,7 @@ export default function Header({ cartCount, onOpenCart }: HeaderProps) {
                   {link.title}
                 </a>
               ))}
-              <div className="pt-2 px-3">
+              <div className="pt-2 px-3 space-y-2">
                 <button
                   onClick={() => {
                     setIsOpen(false);
@@ -133,6 +153,18 @@ export default function Header({ cartCount, onOpenCart }: HeaderProps) {
                   <ShoppingBag size={18} />
                   Lihat Keranjang ({cartCount})
                 </button>
+                {onOpenAdmin && (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      onOpenAdmin();
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all duration-200 flex items-center justify-center gap-1.5"
+                  >
+                    <Lock size={14} />
+                    Login Admin Panel
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>

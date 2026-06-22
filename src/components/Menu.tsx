@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Plus, Minus, Check, Sparkles, X, MessageCircle, AlertCircle, LayoutGrid, ClipboardList } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Product } from "../types";
-import { MENU_ITEMS } from "../data";
 
 interface MenuProps {
   onAddToCart: (product: Product, quantity: number, customMessage?: string) => void;
+  dbProducts?: Product[];
+  productsLoading?: boolean;
 }
 
-export default function Menu({ onAddToCart }: MenuProps) {
+export default function Menu({ onAddToCart, dbProducts, productsLoading }: MenuProps) {
+  const displayItems = dbProducts || [];
+
   const [selectedCustomProduct, setSelectedCustomProduct] = useState<Product | null>(null);
   const [customText, setCustomText] = useState("HBD");
   const [quantity, setQuantity] = useState(1);
@@ -103,9 +106,31 @@ export default function Menu({ onAddToCart }: MenuProps) {
         </div>
 
         {/* Tampilan 1: Grid Card Menu */}
-        {viewMode === "grid" ? (
+        {productsLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {MENU_ITEMS.map((product) => {
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="flex flex-col bg-slate-50 dark:bg-gray-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-gray-800 animate-pulse h-[400px]">
+                <div className="aspect-[4/3] bg-slate-250 dark:bg-gray-850 w-full" />
+                <div className="p-6 flex-grow space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="h-6 bg-slate-200 dark:bg-gray-850 rounded-xl w-3/4" />
+                    <div className="h-4 bg-slate-200 dark:bg-gray-850 rounded-xl w-full" />
+                    <div className="h-4 bg-slate-200 dark:bg-gray-850 rounded-xl w-5/6" />
+                  </div>
+                  <div className="h-12 bg-slate-200 dark:bg-gray-850 rounded-xl w-full mt-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : displayItems.length === 0 ? (
+          <div className="text-center py-16 space-y-3 bg-brand-cream-50 dark:bg-gray-900 rounded-3xl p-6 border-2 border-dashed border-slate-200 dark:border-gray-800 max-w-md mx-auto">
+            <AlertCircle className="text-gray-400 mx-auto" size={36} />
+            <p className="text-sm font-bold text-gray-600 dark:text-gray-300">Database menu kosong.</p>
+            <p className="text-xs text-gray-450 dark:text-gray-500 font-semibold leading-relaxed">Silakan buka panel admin untuk mengisi atau menyinkronkan daftar produk makanan.</p>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayItems.map((product) => {
               const isSpecial = product.id === "dimsum-custom";
               return (
                 <motion.div
@@ -222,7 +247,7 @@ export default function Menu({ onAddToCart }: MenuProps) {
 
             {/* Price Table / List Rows wrapper */}
             <div className="mt-8 divide-y divide-gray-950/10 dark:divide-gray-800">
-              {MENU_ITEMS.map((product) => {
+              {displayItems.map((product) => {
                 const isSpecial = product.id === "dimsum-custom";
                 // Portions labeling logic
                 const portionLabel = product.id === "dimsum-custom"

@@ -1,7 +1,11 @@
 import { Instagram, MessageSquare, MapPin, Clock, Heart, UtensilsCrossed } from "lucide-react";
 import { WHATSAPP_NUMBER, INSTAGRAM_HANDLE, OUTLET_ADDRESS } from "../data";
 
-export default function Footer() {
+interface FooterProps {
+  onOpenAdmin?: () => void;
+}
+
+export default function Footer({ onOpenAdmin }: FooterProps) {
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=Halo%20Admin%20Dimsum%20Embege,%20saya%20mau%20tanya-tanya%20menu%20dimsumnya%20dong!`;
   const instagramUrl = `https://www.instagram.com/${INSTAGRAM_HANDLE}?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==`;
 
@@ -124,11 +128,21 @@ export default function Footer() {
         </div>
 
         {/* Footer Bottom copyright terms */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500 font-bold">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500 font-bold border-t border-gray-900">
           <p>© {new Date().getFullYear()} Dimsum Embege. All Rights Reserved.</p>
-          <p className="flex items-center gap-1">
-            Dibuat penuh dengan <Heart size={10} className="fill-brand-red-650 text-brand-red-600" /> untuk pecinta Dimsum Indonesia.
-          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="flex items-center gap-1">
+              Dibuat penuh dengan <Heart size={10} className="fill-brand-red-650 text-brand-red-600" /> untuk pecinta Dimsum Indonesia.
+            </p>
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="hover:text-brand-red-500 font-extrabold cursor-pointer transition-colors focus:outline-none uppercase tracking-widest text-[9px] border-l border-gray-800 pl-4"
+              >
+                🔐 Portal Admin
+              </button>
+            )}
+          </div>
         </div>
 
       </div>

@@ -15,8 +15,61 @@
       "rules": {
         "read": "true",
         "create": "true",
-        "update": "false",
-        "delete": "false"
+        "update": "true",
+        "delete": "true"
+      }
+    },
+    "products": {
+      "description": "Premium Dimsum Embege items, customizable or standard.",
+      "schema": {
+        "id": "string",
+        "name": "string",
+        "price": "number",
+        "description": "string",
+        "image": "string",
+        "status": "string",
+        "isCustomizable": "boolean",
+        "createdAt": "timestamp"
+      },
+      "rules": {
+        "read": "true",
+        "create": "true",
+        "update": "true",
+        "delete": "true"
+      }
+    },
+    "branches": {
+      "description": "Physical outlets of Dimsum Embege with operational info & links.",
+      "schema": {
+        "id": "string",
+        "name": "string",
+        "address": "string",
+        "whatsapp": "string",
+        "grabFood": "string",
+        "googleMaps": "string",
+        "createdAt": "timestamp"
+      },
+      "rules": {
+        "read": "true",
+        "create": "true",
+        "update": "true",
+        "delete": "true"
+      }
+    },
+    "settings": {
+      "description": "Website-wide configuration settings including WhatsApp numbers & images.",
+      "schema": {
+        "id": "string",
+        "logoUrl": "string",
+        "heroBgUrl": "string",
+        "whatsapp": "string",
+        "grabFood": "string"
+      },
+      "rules": {
+        "read": "true",
+        "create": "true",
+        "update": "true",
+        "delete": "true"
       }
     }
   }

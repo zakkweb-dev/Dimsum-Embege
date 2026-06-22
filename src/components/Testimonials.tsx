@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Star, Quote, Edit3, Check, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { TESTIMONIALS } from "../data";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
 
 const AVATAR_OPTIONS = [
@@ -52,7 +52,7 @@ export default function Testimonials() {
       });
       setDbReviews(items);
     }, (err) => {
-      console.error("Firestore error while reading reviews:", err);
+      handleFirestoreError(err, OperationType.LIST, "reviews");
     });
     return () => unsubscribe();
   }, []);
@@ -96,8 +96,8 @@ export default function Testimonials() {
         setIsOpen(false);
       }, 2000);
     } catch (err: any) {
-      console.error("Failed to submit review to Firestore:", err);
       setError("Gagal mengirim ulasan. Silakan periksa koneksi internet Anda.");
+      handleFirestoreError(err, OperationType.CREATE, "reviews");
     } finally {
       setIsSubmitting(false);
     }
